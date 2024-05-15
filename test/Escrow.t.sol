@@ -21,4 +21,13 @@ contract EscrowTest is Test {
     function testBalance() public view {
         assertEq(beneficiary.balance, 1 ether);
     }
+
+    error unAuthorized();
+
+    function approve() external {
+        (bool success, ) = beneficiary.call{value: address(this).balance}("");
+        require(success);
+
+        if (msg.sender != arbiter) revert unAuthorized(); //if anyone other than the arbiter tries to approve the transaction, revert
+    }
 }
