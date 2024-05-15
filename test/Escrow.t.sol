@@ -22,12 +22,15 @@ contract EscrowTest is Test {
         assertEq(beneficiary.balance, 1 ether);
     }
 
-    error unAuthorized();
+    function testApprovalEvent() public {
+        vm.prank(arbiter);
+        vm.recordLogs();
 
-    function approve() external {
-        (bool success, ) = beneficiary.call{value: address(this).balance}("");
-        require(success);
+        escrow.approve();
 
-        if (msg.sender != arbiter) revert unAuthorized(); //if anyone other than the arbiter tries to approve the transaction, revert
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        assertEq(entries.length, 1);
+        assertEq(entries[0].topics[0], keccak256("Approved(uint256)"));
+        assertEq(abi.decode(entries[0].data, (uint)), 1 ether);
     }
 }

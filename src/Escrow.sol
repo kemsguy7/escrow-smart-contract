@@ -13,9 +13,17 @@ contract Escrow {
         depositor = msg.sender;
     }
 
+    error unAuthorized();
+    event Approved(uint);
+
     function approve() external {
-        // this function approves the contract and transfers the remaining balance to the beneficiary
+        uint balance = address(this).balance; //get the balance of the contract
+
         (bool success, ) = beneficiary.call{value: address(this).balance}("");
         require(success);
+
+        if (msg.sender != arbiter) revert unAuthorized(); //if anyone other than the arbiter tries to approve the transaction, revert
+
+        emit Approved(balance); //emit  the event
     }
 }
